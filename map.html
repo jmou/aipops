@@ -84,6 +84,10 @@
         <select id="amenity-filter">
             <option value="all">All Amenities</option>
         </select>
+        <label for="hours-filter">Hours of Access:</label>
+        <select id="hours-filter">
+            <option value="all">All Hours</option>
+        </select>
         <button id="clear-filters">Clear Filters</button>
     </div>
     <script>
@@ -124,8 +128,9 @@
             let currentPopup = null;
             let spaceTypes = {};
             let amenities = {};
+            let hoursOfAccess = {};
 
-            // Populate space types, amenities, and count occurrences
+            // Populate space types, amenities, hours of access, and count occurrences
             const sourceData = await map.getSource('pops').getData();
             sourceData.features.forEach(feature => {
                 feature.properties.public_space_type.split('; ').forEach(type => {
@@ -136,10 +141,13 @@
                     amenity = amenity.trim();
                     amenities[amenity] = (amenities[amenity] || 0) + 1;
                 });
+                const hours = feature.properties.hour_of_access_required.trim();
+                hoursOfAccess[hours] = (hoursOfAccess[hours] || 0) + 1;
             });
 
             const spaceTypeFilter = document.getElementById('space-type-filter');
             const amenityFilter = document.getElementById('amenity-filter');
+            const hoursFilter = document.getElementById('hours-filter');
 
             function populateFilter(filter, data) {
                 Object.entries(data)
@@ -154,10 +162,12 @@
 
             populateFilter(spaceTypeFilter, spaceTypes);
             populateFilter(amenityFilter, amenities);
+            populateFilter(hoursFilter, hoursOfAccess);
 
             function updateFilter() {
                 const selectedType = spaceTypeFilter.value;
                 const selectedAmenity = amenityFilter.value;
+                const selectedHours = hoursFilter.value;
                 let filter = ['all'];
 
                 if (selectedType !== 'all') {
@@ -171,16 +181,22 @@
                     filter.push(['in', selectedAmenity, ['string', ['get', 'amenities_required']]]);
                 }
 
+                if (selectedHours !== 'all') {
+                    filter.push(['==', ['get', 'hour_of_access_required'], selectedHours]);
+                }
+
                 map.setFilter('pops-layer', filter.length > 1 ? filter : null);
             }
 
             spaceTypeFilter.addEventListener('change', updateFilter);
             amenityFilter.addEventListener('change', updateFilter);
+            hoursFilter.addEventListener('change', updateFilter);
 
             const clearFiltersButton = document.getElementById('clear-filters');
             clearFiltersButton.addEventListener('click', () => {
                 spaceTypeFilter.value = 'all';
                 amenityFilter.value = 'all';
+                hoursFilter.value = 'all';
                 updateFilter();
             });
 
