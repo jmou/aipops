@@ -288,17 +288,9 @@
                         3,
                         1
                     ]);
-                    map.setPaintProperty('pops-layer', 'circle-translate', [
-                        'case',
-                        ['==', ['get', 'pops_number'], popsNumber],
-                        [0, 0],
-                        [0, 0]
-                    ]);
-                    map.setPaintProperty('pops-layer', 'circle-translate-anchor', 'viewport');
                 } else {
                     map.setPaintProperty('pops-layer', 'circle-stroke-color', '#000');
                     map.setPaintProperty('pops-layer', 'circle-stroke-width', 1);
-                    map.setPaintProperty('pops-layer', 'circle-translate', [0, 0]);
                 }
             }
 
