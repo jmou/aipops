@@ -59,7 +59,7 @@
             }
         });
 
-        map.on('load', () => {
+        map.on('load', async () => {
             map.addSource('pops', {
                 type: 'geojson',
                 data: 'pops.geojson'
@@ -81,7 +81,8 @@
             let spaceTypes = new Set();
 
             // Populate space types
-            map.getSource('pops').getData().features.forEach(feature => {
+            const sourceData = await map.getSource('pops').getData();
+            sourceData.features.forEach(feature => {
                 spaceTypes.add(feature.properties.public_space_type);
             });
 
