@@ -53,7 +53,6 @@
             let currentPopup = null;
 
             function createPopupContent(properties) {
-                const apopsLink = `https://apops.mas.org/pops/${properties.pops_number.toLowerCase()}/`;
                 const amenitiesList = properties.amenities_required
                     .split('; ')
                     .map(amenity => `<li>${amenity}</li>`)
@@ -65,8 +64,7 @@
                         Size Required: ${properties.size_required}<br>
                         Hours of Access Required: ${properties.hour_of_access_required}<br>
                         Amenities Required: 
-                        <ul>${amenitiesList}</ul>
-                        <a href="${apopsLink}" target="_blank">View on APOPS website</a>`;
+                        <ul>${amenitiesList}</ul>`;
             }
 
             function updatePopup(e) {
@@ -75,7 +73,7 @@
                 const apopsLink = `https://apops.mas.org/pops/${properties.pops_number.toLowerCase()}/`;
 
                 if (!currentPopup) {
-                    currentPopup = new maplibregl.Popup()
+                    currentPopup = new maplibregl.Popup({opacity: 0.9})
                         .setLngLat(coordinates)
                         .setHTML(createPopupContent(properties))
                         .addTo(map);
