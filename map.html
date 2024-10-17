@@ -127,6 +127,7 @@
             });
 
             let currentPopup = null;
+            let highlightedFeatureId = null;
             let spaceTypes = {};
             let amenities = {};
             let hoursOfAccess = {};
@@ -229,7 +230,16 @@
             function updatePopup(e) {
                 const coordinates = e.features[0].geometry.coordinates.slice();
                 const properties = e.features[0].properties;
+                const featureId = e.features[0].id;
                 const apopsLink = `https://apops.mas.org/pops/${properties.pops_number.toLowerCase()}/`;
+
+                if (highlightedFeatureId !== featureId) {
+                    if (highlightedFeatureId !== null) {
+                        updateCircleStyle(highlightedFeatureId, false);
+                    }
+                    updateCircleStyle(featureId, true);
+                    highlightedFeatureId = featureId;
+                }
 
                 if (!currentPopup) {
                     currentPopup = new maplibregl.Popup()
@@ -249,6 +259,10 @@
                     currentPopup.remove();
                     currentPopup = null;
                 }
+                if (highlightedFeatureId !== null) {
+                    updateCircleStyle(highlightedFeatureId, false);
+                    highlightedFeatureId = null;
+                }
                 map.getCanvas().style.cursor = '';
                 document.getElementById('map-link').href = '#';
             }
@@ -259,6 +273,33 @@
             });
 
             map.on('mouseleave', 'pops-layer', closePopup);
+
+            function updateCircleStyle(id, highlight) {
+                if (highlight) {
+                    map.setPaintProperty('pops-layer', 'circle-opacity', [
+                        'case',
+                        ['==', ['id'], id],
+                        1,
+                        0.7
+                    ]);
+                    map.setPaintProperty('pops-layer', 'circle-stroke-color', [
+                        'case',
+                        ['==', ['id'], id],
+                        '#0000FF',
+                        '#000'
+                    ]);
+                    map.setPaintProperty('pops-layer', 'circle-stroke-width', [
+                        'case',
+                        ['==', ['id'], id],
+                        3,
+                        1
+                    ]);
+                } else {
+                    map.setPaintProperty('pops-layer', 'circle-opacity', 0.7);
+                    map.setPaintProperty('pops-layer', 'circle-stroke-color', '#000');
+                    map.setPaintProperty('pops-layer', 'circle-stroke-width', 1);
+                }
+            }
 
             // GPS location functionality
             const gpsControl = document.getElementById('gps-control');
