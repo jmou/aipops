@@ -175,14 +175,14 @@
                 let filter = ['all'];
 
                 function createFilterCondition(property, value) {
-                    return ['any',
-                        ['==', ['get', property], value],
-                        ['in', value, ['string', ['get', property]]],
-                        ['all',
-                            ['==', value, ''],
-                            ['==', ['get', property], '']
-                        ]
-                    ];
+                    if (value === '') {
+                        return ['==', ['get', property], ''];
+                    } else {
+                        return ['any',
+                            ['==', ['get', property], value],
+                            ['in', value, ['string', ['get', property]]]
+                        ];
+                    }
                 }
 
                 if (selectedType !== 'all') {
