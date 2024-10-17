@@ -69,9 +69,30 @@
                                       <ul>${amenitiesList}</ul>
                                       <a href="${apopsLink}" target="_blank">View on APOPS website</a>`;
 
-                return new maplibregl.Popup()
+                const popup = new maplibregl.Popup()
                     .setLngLat(coordinates)
                     .setHTML(popupContent);
+
+                popup.on('open', () => {
+                    const popupElement = popup.getElement();
+                    popupElement.addEventListener('mouseenter', () => {
+                        map.off('mouseleave', 'pops-layer', closePopup);
+                    });
+                    popupElement.addEventListener('mouseleave', () => {
+                        map.on('mouseleave', 'pops-layer', closePopup);
+                        closePopup();
+                    });
+                });
+
+                return popup;
+            }
+
+            function closePopup() {
+                if (currentPopup) {
+                    currentPopup.remove();
+                    currentPopup = null;
+                }
+                map.getCanvas().style.cursor = '';
             }
 
             map.on('mouseenter', 'pops-layer', (e) => {
@@ -82,16 +103,10 @@
                 currentPopup = createPopup(e).addTo(map);
             });
 
-            map.on('mouseleave', 'pops-layer', () => {
-                map.getCanvas().style.cursor = '';
-                if (currentPopup) {
-                    currentPopup.remove();
-                    currentPopup = null;
-                }
-            });
+            map.on('mouseleave', 'pops-layer', closePopup);
 
             map.on('click', 'pops-layer', (e) => {
-                // Do nothing on click, as we're not keeping popups open anymore
+                // Do nothing on click, as we're handling interactions with mouseover
             });
         });
     </script>
