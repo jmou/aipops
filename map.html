@@ -30,6 +30,10 @@
             border-radius: 3px;
             box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
+        #filter-control select {
+            margin-bottom: 5px;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
@@ -40,6 +44,10 @@
         <label for="space-type-filter">Filter by Public Space Type:</label>
         <select id="space-type-filter">
             <option value="all">All Types</option>
+        </select>
+        <label for="amenity-filter">Filter by Amenity:</label>
+        <select id="amenity-filter">
+            <option value="all">All Amenities</option>
         </select>
     </div>
     <script>
@@ -79,37 +87,59 @@
 
             let currentPopup = null;
             let spaceTypes = {};
+            let amenities = {};
 
-            // Populate space types and count occurrences
+            // Populate space types, amenities, and count occurrences
             const sourceData = await map.getSource('pops').getData();
             sourceData.features.forEach(feature => {
                 feature.properties.public_space_type.split('; ').forEach(type => {
                     type = type.trim();
                     spaceTypes[type] = (spaceTypes[type] || 0) + 1;
                 });
+                feature.properties.amenities_required.split('; ').forEach(amenity => {
+                    amenity = amenity.trim();
+                    amenities[amenity] = (amenities[amenity] || 0) + 1;
+                });
             });
 
-            const filterSelect = document.getElementById('space-type-filter');
-            Object.entries(spaceTypes)
-                .sort((a, b) => b[1] - a[1])
-                .forEach(([type, count]) => {
-                    const option = document.createElement('option');
-                    option.value = type;
-                    option.textContent = `${type} (${count})`;
-                    filterSelect.appendChild(option);
-                });
+            const spaceTypeFilter = document.getElementById('space-type-filter');
+            const amenityFilter = document.getElementById('amenity-filter');
 
-            filterSelect.addEventListener('change', (e) => {
-                const selectedType = e.target.value;
-                if (selectedType === 'all') {
-                    map.setFilter('pops-layer', null);
-                } else {
-                    map.setFilter('pops-layer', ['any', 
+            function populateFilter(filter, data) {
+                Object.entries(data)
+                    .sort((a, b) => b[1] - a[1])
+                    .forEach(([item, count]) => {
+                        const option = document.createElement('option');
+                        option.value = item;
+                        option.textContent = `${item} (${count})`;
+                        filter.appendChild(option);
+                    });
+            }
+
+            populateFilter(spaceTypeFilter, spaceTypes);
+            populateFilter(amenityFilter, amenities);
+
+            function updateFilter() {
+                const selectedType = spaceTypeFilter.value;
+                const selectedAmenity = amenityFilter.value;
+                let filter = ['all'];
+
+                if (selectedType !== 'all') {
+                    filter.push(['any',
                         ['==', ['get', 'public_space_type'], selectedType],
                         ['in', selectedType, ['string', ['get', 'public_space_type']]]
                     ]);
                 }
-            });
+
+                if (selectedAmenity !== 'all') {
+                    filter.push(['in', selectedAmenity, ['string', ['get', 'amenities_required']]]);
+                }
+
+                map.setFilter('pops-layer', filter.length > 1 ? filter : null);
+            }
+
+            spaceTypeFilter.addEventListener('change', updateFilter);
+            amenityFilter.addEventListener('change', updateFilter);
 
             function createPopupContent(properties) {
                 const amenitiesList = properties.amenities_required
