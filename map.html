@@ -141,8 +141,10 @@
                     amenity = amenity.trim();
                     amenities[amenity] = (amenities[amenity] || 0) + 1;
                 });
-                const hours = feature.properties.hour_of_access_required.trim();
-                hoursOfAccess[hours] = (hoursOfAccess[hours] || 0) + 1;
+                feature.properties.hour_of_access_required.split('; ').forEach(hours => {
+                    hours = hours.trim();
+                    hoursOfAccess[hours] = (hoursOfAccess[hours] || 0) + 1;
+                });
             });
 
             const spaceTypeFilter = document.getElementById('space-type-filter');
@@ -182,7 +184,10 @@
                 }
 
                 if (selectedHours !== 'all') {
-                    filter.push(['==', ['get', 'hour_of_access_required'], selectedHours]);
+                    filter.push(['any',
+                        ['==', ['get', 'hour_of_access_required'], selectedHours],
+                        ['in', selectedHours, ['string', ['get', 'hour_of_access_required']]]
+                    ]);
                 }
 
                 map.setFilter('pops-layer', filter.length > 1 ? filter : null);
@@ -210,7 +215,7 @@
                         Year Completed: ${properties.year_completed}<br>
                         Public Space Type: ${properties.public_space_type.split('; ').join(', ')}<br>
                         Size Required: ${properties.size_required}<br>
-                        Hours of Access Required: ${properties.hour_of_access_required}<br>
+                        Hours of Access Required: ${properties.hour_of_access_required.split('; ').join(', ')}<br>
                         Amenities Required: 
                         <ul>${amenitiesList}</ul>`;
             }
