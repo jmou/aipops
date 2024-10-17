@@ -29,25 +29,27 @@
             padding: 10px;
             border-radius: 3px;
             box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            border: 1px solid #ccc;
         }
         #filter-control select {
             margin-bottom: 5px;
+            width: 100%;
         }
         #filter-control label {
             display: block;
             margin-top: 10px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
     <a id="map-link"><div id="map"></div></a>
     <div id="filter-control">
-        <label for="space-type-filter">Filter by Public Space Type:</label>
+        <label for="space-type-filter">Public Space Type:</label>
         <select id="space-type-filter">
             <option value="all">All Types</option>
         </select>
-        <br>
-        <label for="amenity-filter">Filter by Amenity:</label>
+        <label for="amenity-filter">Amenity:</label>
         <select id="amenity-filter">
             <option value="all">All Amenities</option>
         </select>
