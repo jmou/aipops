@@ -157,7 +157,7 @@
                     .forEach(([item, count]) => {
                         const option = document.createElement('option');
                         option.value = item;
-                        option.textContent = `${item} (${count})`;
+                        option.textContent = `${item === '' ? 'No data' : item} (${count})`;
                         filter.appendChild(option);
                     });
             }
@@ -172,22 +172,27 @@
                 const selectedHours = hoursFilter.value;
                 let filter = ['all'];
 
+                function createFilterCondition(property, value) {
+                    return ['any',
+                        ['==', ['get', property], value],
+                        ['in', value, ['string', ['get', property]]],
+                        ['all',
+                            ['==', value, ''],
+                            ['==', ['get', property], '']
+                        ]
+                    ];
+                }
+
                 if (selectedType !== 'all') {
-                    filter.push(['any',
-                        ['==', ['get', 'public_space_type'], selectedType],
-                        ['in', selectedType, ['string', ['get', 'public_space_type']]]
-                    ]);
+                    filter.push(createFilterCondition('public_space_type', selectedType));
                 }
 
                 if (selectedAmenity !== 'all') {
-                    filter.push(['in', selectedAmenity, ['string', ['get', 'amenities_required']]]);
+                    filter.push(createFilterCondition('amenities_required', selectedAmenity));
                 }
 
                 if (selectedHours !== 'all') {
-                    filter.push(['any',
-                        ['==', ['get', 'hour_of_access_required'], selectedHours],
-                        ['in', selectedHours, ['string', ['get', 'hour_of_access_required']]]
-                    ]);
+                    filter.push(createFilterCondition('hour_of_access_required', selectedHours));
                 }
 
                 map.setFilter('pops-layer', filter.length > 1 ? filter : null);
