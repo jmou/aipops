@@ -276,12 +276,6 @@
 
             function updateCircleStyle(popsNumber, highlight) {
                 if (highlight) {
-                    map.setPaintProperty('pops-layer', 'circle-opacity', [
-                        'case',
-                        ['==', ['get', 'pops_number'], popsNumber],
-                        1,
-                        0.7
-                    ]);
                     map.setPaintProperty('pops-layer', 'circle-stroke-color', [
                         'case',
                         ['==', ['get', 'pops_number'], popsNumber],
@@ -294,10 +288,17 @@
                         3,
                         1
                     ]);
+                    map.setPaintProperty('pops-layer', 'circle-translate', [
+                        'case',
+                        ['==', ['get', 'pops_number'], popsNumber],
+                        [0, 0],
+                        [0, 0]
+                    ]);
+                    map.setPaintProperty('pops-layer', 'circle-translate-anchor', 'viewport');
                 } else {
-                    map.setPaintProperty('pops-layer', 'circle-opacity', 0.7);
                     map.setPaintProperty('pops-layer', 'circle-stroke-color', '#000');
                     map.setPaintProperty('pops-layer', 'circle-stroke-width', 1);
+                    map.setPaintProperty('pops-layer', 'circle-translate', [0, 0]);
                 }
             }
 
