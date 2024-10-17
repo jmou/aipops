@@ -4,48 +4,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>POPS Map</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src='https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.js'></script>
+    <link href='https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.css' rel='stylesheet' />
     <style>
-        #map {
-            height: 600px;
-            width: 100%;
-        }
+        body { margin: 0; padding: 0; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
     </style>
 </head>
 <body>
-    <h1>Privately Owned Public Spaces (POPS) in New York City</h1>
     <div id="map"></div>
     <script>
-        var map = L.map('map').setView([40.7128, -74.0060], 11);  // Center on NYC
+        const map = new maplibregl.Map({
+            container: 'map',
+            style: 'https://api.maptiler.com/maps/streets/style.json?key=get_your_own_OpIi9ZULNHzrESv6T2vL',
+            center: [-74.0060, 40.7128],  // Center on NYC
+            zoom: 11
+        });
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-
-        fetch('pops.geojson')
-            .then(response => response.json())
-            .then(data => {
-                L.geoJSON(data, {
-                    pointToLayer: function(feature, latlng) {
-                        return L.circleMarker(latlng, {
-                            radius: 8,
-                            fillColor: "#ff7800",
-                            color: "#000",
-                            weight: 1,
-                            opacity: 1,
-                            fillOpacity: 0.8
-                        });
-                    },
-                    onEachFeature: function(feature, layer) {
-                        var popupContent = "<b>" + feature.properties.building_name + "</b><br>" +
-                                           "Address: " + feature.properties.building_address_with_zip + "<br>" +
-                                           "Year Completed: " + feature.properties.year_completed + "<br>" +
-                                           "Public Space Type: " + feature.properties.public_space_type;
-                        layer.bindPopup(popupContent);
-                    }
-                }).addTo(map);
+        map.on('load', () => {
+            map.addSource('pops', {
+                type: 'geojson',
+                data: 'pops.geojson'
             });
+
+            map.addLayer({
+                'id': 'pops-layer',
+                'type': 'circle',
+                'source': 'pops',
+                'paint': {
+                    'circle-radius': 8,
+                    'circle-color': '#ff7800',
+                    'circle-stroke-width': 1,
+                    'circle-stroke-color': '#000'
+                }
+            });
+
+            map.on('click', 'pops-layer', (e) => {
+                const coordinates = e.features[0].geometry.coordinates.slice();
+                const properties = e.features[0].properties;
+
+                const popupContent = `<b>${properties.building_name}</b><br>
+                                      Address: ${properties.building_address_with_zip}<br>
+                                      Year Completed: ${properties.year_completed}<br>
+                                      Public Space Type: ${properties.public_space_type}`;
+
+                new maplibregl.Popup()
+                    .setLngLat(coordinates)
+                    .setHTML(popupContent)
+                    .addTo(map);
+            });
+
+            map.on('mouseenter', 'pops-layer', () => {
+                map.getCanvas().style.cursor = 'pointer';
+            });
+
+            map.on('mouseleave', 'pops-layer', () => {
+                map.getCanvas().style.cursor = '';
+            });
+        });
     </script>
 </body>
 </html>
