@@ -12,7 +12,9 @@
     </style>
 </head>
 <body>
-    <div id="map"></div>
+    <a id="map-link" href="#" target="_blank">
+        <div id="map"></div>
+    </a>
     <script>
         const map = new maplibregl.Map({
             container: 'map',
@@ -82,6 +84,8 @@
                         map.on('mouseleave', 'pops-layer', closePopup);
                         closePopup();
                     });
+                    // Set the href attribute of the map-link when popup opens
+                    document.getElementById('map-link').href = apopsLink;
                 });
 
                 return popup;
@@ -93,6 +97,8 @@
                     currentPopup = null;
                 }
                 map.getCanvas().style.cursor = '';
+                // Reset the href attribute when popup closes
+                document.getElementById('map-link').href = '#';
             }
 
             map.on('mouseenter', 'pops-layer', (e) => {
