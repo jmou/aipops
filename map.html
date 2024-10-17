@@ -230,15 +230,15 @@
             function updatePopup(e) {
                 const coordinates = e.features[0].geometry.coordinates.slice();
                 const properties = e.features[0].properties;
-                const featureId = e.features[0].id;
-                const apopsLink = `https://apops.mas.org/pops/${properties.pops_number.toLowerCase()}/`;
+                const popsNumber = properties.pops_number;
+                const apopsLink = `https://apops.mas.org/pops/${popsNumber.toLowerCase()}/`;
 
-                if (highlightedFeatureId !== featureId) {
+                if (highlightedFeatureId !== popsNumber) {
                     if (highlightedFeatureId !== null) {
                         updateCircleStyle(highlightedFeatureId, false);
                     }
-                    updateCircleStyle(featureId, true);
-                    highlightedFeatureId = featureId;
+                    updateCircleStyle(popsNumber, true);
+                    highlightedFeatureId = popsNumber;
                 }
 
                 if (!currentPopup) {
@@ -274,23 +274,23 @@
 
             map.on('mouseleave', 'pops-layer', closePopup);
 
-            function updateCircleStyle(id, highlight) {
+            function updateCircleStyle(popsNumber, highlight) {
                 if (highlight) {
                     map.setPaintProperty('pops-layer', 'circle-opacity', [
                         'case',
-                        ['==', ['id'], id],
+                        ['==', ['get', 'pops_number'], popsNumber],
                         1,
                         0.7
                     ]);
                     map.setPaintProperty('pops-layer', 'circle-stroke-color', [
                         'case',
-                        ['==', ['id'], id],
+                        ['==', ['get', 'pops_number'], popsNumber],
                         '#0000FF',
                         '#000'
                     ]);
                     map.setPaintProperty('pops-layer', 'circle-stroke-width', [
                         'case',
-                        ['==', ['id'], id],
+                        ['==', ['get', 'pops_number'], popsNumber],
                         3,
                         1
                     ]);
