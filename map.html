@@ -84,18 +84,14 @@
 
             map.on('mouseleave', 'pops-layer', () => {
                 map.getCanvas().style.cursor = '';
-                if (currentPopup && !currentPopup.isOpen) {
+                if (currentPopup) {
                     currentPopup.remove();
                     currentPopup = null;
                 }
             });
 
             map.on('click', 'pops-layer', (e) => {
-                if (currentPopup) {
-                    currentPopup.remove();
-                }
-                currentPopup = createPopup(e).addTo(map);
-                currentPopup.isOpen = true;
+                // Do nothing on click, as we're not keeping popups open anymore
             });
         });
     </script>
