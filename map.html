@@ -48,7 +48,9 @@
                 }
             });
 
-            map.on('click', 'pops-layer', (e) => {
+            let currentPopup = null;
+
+            function createPopup(e) {
                 const coordinates = e.features[0].geometry.coordinates.slice();
                 const properties = e.features[0].properties;
 
@@ -67,18 +69,33 @@
                                       <ul>${amenitiesList}</ul>
                                       <a href="${apopsLink}" target="_blank">View on APOPS website</a>`;
 
-                new maplibregl.Popup()
+                return new maplibregl.Popup()
                     .setLngLat(coordinates)
-                    .setHTML(popupContent)
-                    .addTo(map);
-            });
+                    .setHTML(popupContent);
+            }
 
-            map.on('mouseenter', 'pops-layer', () => {
+            map.on('mouseenter', 'pops-layer', (e) => {
                 map.getCanvas().style.cursor = 'pointer';
+                if (currentPopup) {
+                    currentPopup.remove();
+                }
+                currentPopup = createPopup(e).addTo(map);
             });
 
             map.on('mouseleave', 'pops-layer', () => {
                 map.getCanvas().style.cursor = '';
+                if (currentPopup && !currentPopup.isOpen()) {
+                    currentPopup.remove();
+                    currentPopup = null;
+                }
+            });
+
+            map.on('click', 'pops-layer', (e) => {
+                if (currentPopup) {
+                    currentPopup.remove();
+                }
+                currentPopup = createPopup(e).addTo(map);
+                currentPopup.isOpen = () => true;
             });
         });
     </script>
