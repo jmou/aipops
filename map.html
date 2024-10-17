@@ -21,6 +21,15 @@
             zoom: 11
         });
 
+        map.on('style.load', () => {
+            const layers = map.getStyle().layers;
+            for (const layer of layers) {
+                if (layer.type === 'fill-extrusion') {
+                    map.removeLayer(layer.id);
+                }
+            }
+        });
+
         map.on('load', () => {
             map.addSource('pops', {
                 type: 'geojson',
