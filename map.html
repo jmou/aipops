@@ -9,6 +9,9 @@
     <style>
         body { margin: 0; padding: 0; }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        .maplibregl-popup-content {
+            opacity: 0.9;
+        }
     </style>
 </head>
 <body>
@@ -73,7 +76,7 @@
                 const apopsLink = `https://apops.mas.org/pops/${properties.pops_number.toLowerCase()}/`;
 
                 if (!currentPopup) {
-                    currentPopup = new maplibregl.Popup({opacity: 0.9})
+                    currentPopup = new maplibregl.Popup()
                         .setLngLat(coordinates)
                         .setHTML(createPopupContent(properties))
                         .addTo(map);
