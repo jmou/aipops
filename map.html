@@ -83,11 +83,13 @@
             // Populate space types
             const sourceData = await map.getSource('pops').getData();
             sourceData.features.forEach(feature => {
-                spaceTypes.add(feature.properties.public_space_type);
+                feature.properties.public_space_type.split('; ').forEach(type => {
+                    spaceTypes.add(type.trim());
+                });
             });
 
             const filterSelect = document.getElementById('space-type-filter');
-            spaceTypes.forEach(type => {
+            Array.from(spaceTypes).sort().forEach(type => {
                 const option = document.createElement('option');
                 option.value = type;
                 option.textContent = type;
@@ -99,7 +101,10 @@
                 if (selectedType === 'all') {
                     map.setFilter('pops-layer', null);
                 } else {
-                    map.setFilter('pops-layer', ['==', ['get', 'public_space_type'], selectedType]);
+                    map.setFilter('pops-layer', ['any', 
+                        ['==', ['get', 'public_space_type'], selectedType],
+                        ['in', selectedType, ['string', ['get', 'public_space_type']]]
+                    ]);
                 }
             });
 
@@ -111,7 +116,7 @@
                 return `<b>${properties.building_name}</b><br>
                         Address: ${properties.building_address_with_zip}<br>
                         Year Completed: ${properties.year_completed}<br>
-                        Public Space Type: ${properties.public_space_type}<br>
+                        Public Space Type: ${properties.public_space_type.split('; ').join(', ')}<br>
                         Size Required: ${properties.size_required}<br>
                         Hours of Access Required: ${properties.hour_of_access_required}<br>
                         Amenities Required: 
