@@ -44,13 +44,18 @@
                 const properties = e.features[0].properties;
 
                 const apopsLink = `https://apops.mas.org/pops/${properties.pops_number.toLowerCase()}/`;
+                const amenitiesList = properties.amenities_required
+                    .split('; ')
+                    .map(amenity => `<li>${amenity}</li>`)
+                    .join('');
                 const popupContent = `<b>${properties.building_name}</b><br>
                                       Address: ${properties.building_address_with_zip}<br>
                                       Year Completed: ${properties.year_completed}<br>
                                       Public Space Type: ${properties.public_space_type}<br>
                                       Size Required: ${properties.size_required}<br>
                                       Hours of Access Required: ${properties.hour_of_access_required}<br>
-                                      Amenities Required: ${properties.amenities_required}<br>
+                                      Amenities Required: 
+                                      <ul>${amenitiesList}</ul>
                                       <a href="${apopsLink}" target="_blank">View on APOPS website</a>`;
 
                 new maplibregl.Popup()
