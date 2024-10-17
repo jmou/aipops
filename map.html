@@ -191,8 +191,16 @@
             map.on('mouseleave', 'pops-layer', closePopup);
 
             map.on('click', 'pops-layer', (e) => {
-                // Do nothing on click, as we're handling interactions with mouseover
+                const properties = e.features[0].properties;
+                const apopsLink = `https://apops.mas.org/pops/${properties.pops_number.toLowerCase()}/`;
+                window.open(apopsLink, '_blank');
             });
+        });
+
+        // Prevent default behavior of the map link
+        const mapLink = document.getElementById('map-link');
+        mapLink.addEventListener('mousedown', function(e) {
+            e.preventDefault();
         });
     </script>
 </body>
