@@ -78,23 +78,26 @@
             });
 
             let currentPopup = null;
-            let spaceTypes = new Set();
+            let spaceTypes = {};
 
-            // Populate space types
+            // Populate space types and count occurrences
             const sourceData = await map.getSource('pops').getData();
             sourceData.features.forEach(feature => {
                 feature.properties.public_space_type.split('; ').forEach(type => {
-                    spaceTypes.add(type.trim());
+                    type = type.trim();
+                    spaceTypes[type] = (spaceTypes[type] || 0) + 1;
                 });
             });
 
             const filterSelect = document.getElementById('space-type-filter');
-            Array.from(spaceTypes).sort().forEach(type => {
-                const option = document.createElement('option');
-                option.value = type;
-                option.textContent = type;
-                filterSelect.appendChild(option);
-            });
+            Object.entries(spaceTypes)
+                .sort((a, b) => b[1] - a[1])
+                .forEach(([type, count]) => {
+                    const option = document.createElement('option');
+                    option.value = type;
+                    option.textContent = `${type} (${count})`;
+                    filterSelect.appendChild(option);
+                });
 
             filterSelect.addEventListener('change', (e) => {
                 const selectedType = e.target.value;
