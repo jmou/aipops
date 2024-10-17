@@ -52,43 +52,39 @@
 
             let currentPopup = null;
 
-            function createPopup(e) {
-                const coordinates = e.features[0].geometry.coordinates.slice();
-                const properties = e.features[0].properties;
-
+            function createPopupContent(properties) {
                 const apopsLink = `https://apops.mas.org/pops/${properties.pops_number.toLowerCase()}/`;
                 const amenitiesList = properties.amenities_required
                     .split('; ')
                     .map(amenity => `<li>${amenity}</li>`)
                     .join('');
-                const popupContent = `<b>${properties.building_name}</b><br>
-                                      Address: ${properties.building_address_with_zip}<br>
-                                      Year Completed: ${properties.year_completed}<br>
-                                      Public Space Type: ${properties.public_space_type}<br>
-                                      Size Required: ${properties.size_required}<br>
-                                      Hours of Access Required: ${properties.hour_of_access_required}<br>
-                                      Amenities Required: 
-                                      <ul>${amenitiesList}</ul>
-                                      <a href="${apopsLink}" target="_blank">View on APOPS website</a>`;
+                return `<b>${properties.building_name}</b><br>
+                        Address: ${properties.building_address_with_zip}<br>
+                        Year Completed: ${properties.year_completed}<br>
+                        Public Space Type: ${properties.public_space_type}<br>
+                        Size Required: ${properties.size_required}<br>
+                        Hours of Access Required: ${properties.hour_of_access_required}<br>
+                        Amenities Required: 
+                        <ul>${amenitiesList}</ul>
+                        <a href="${apopsLink}" target="_blank">View on APOPS website</a>`;
+            }
 
-                const popup = new maplibregl.Popup()
-                    .setLngLat(coordinates)
-                    .setHTML(popupContent);
+            function updatePopup(e) {
+                const coordinates = e.features[0].geometry.coordinates.slice();
+                const properties = e.features[0].properties;
+                const apopsLink = `https://apops.mas.org/pops/${properties.pops_number.toLowerCase()}/`;
 
-                popup.on('open', () => {
-                    const popupElement = popup.getElement();
-                    popupElement.addEventListener('mouseenter', () => {
-                        map.off('mouseleave', 'pops-layer', closePopup);
-                    });
-                    popupElement.addEventListener('mouseleave', () => {
-                        map.on('mouseleave', 'pops-layer', closePopup);
-                        closePopup();
-                    });
-                    // Set the href attribute of the map-link when popup opens
-                    document.getElementById('map-link').href = apopsLink;
-                });
+                if (!currentPopup) {
+                    currentPopup = new maplibregl.Popup()
+                        .setLngLat(coordinates)
+                        .setHTML(createPopupContent(properties))
+                        .addTo(map);
+                } else {
+                    currentPopup.setLngLat(coordinates)
+                        .setHTML(createPopupContent(properties));
+                }
 
-                return popup;
+                document.getElementById('map-link').href = apopsLink;
             }
 
             function closePopup() {
@@ -97,16 +93,12 @@
                     currentPopup = null;
                 }
                 map.getCanvas().style.cursor = '';
-                // Reset the href attribute when popup closes
                 document.getElementById('map-link').href = '#';
             }
 
-            map.on('mouseenter', 'pops-layer', (e) => {
+            map.on('mousemove', 'pops-layer', (e) => {
                 map.getCanvas().style.cursor = 'pointer';
-                if (currentPopup) {
-                    currentPopup.remove();
-                }
-                currentPopup = createPopup(e).addTo(map);
+                updatePopup(e);
             });
 
             map.on('mouseleave', 'pops-layer', closePopup);
