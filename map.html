@@ -189,12 +189,6 @@
             });
 
             map.on('mouseleave', 'pops-layer', closePopup);
-
-            map.on('click', 'pops-layer', (e) => {
-                const properties = e.features[0].properties;
-                const apopsLink = `https://apops.mas.org/pops/${properties.pops_number.toLowerCase()}/`;
-                window.open(apopsLink, '_blank');
-            });
         });
 
         // Prevent default behavior of the map link
