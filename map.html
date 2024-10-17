@@ -43,10 +43,12 @@
                 const coordinates = e.features[0].geometry.coordinates.slice();
                 const properties = e.features[0].properties;
 
+                const apopsLink = `https://apops.mas.org/pops/${properties.pops_number.toLowerCase()}/`;
                 const popupContent = `<b>${properties.building_name}</b><br>
                                       Address: ${properties.building_address_with_zip}<br>
                                       Year Completed: ${properties.year_completed}<br>
-                                      Public Space Type: ${properties.public_space_type}`;
+                                      Public Space Type: ${properties.public_space_type}<br>
+                                      <a href="${apopsLink}" target="_blank">View on APOPS website</a>`;
 
                 new maplibregl.Popup()
                     .setLngLat(coordinates)
