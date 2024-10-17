@@ -55,10 +55,26 @@
         #clear-filters:hover {
             background-color: #e0e0e0;
         }
+        #gps-control {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1;
+            background-color: white;
+            padding: 5px;
+            border-radius: 3px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            border: 1px solid #ccc;
+            cursor: pointer;
+        }
+        #gps-control:hover {
+            background-color: #f0f0f0;
+        }
     </style>
 </head>
 <body>
     <a id="map-link"><div id="map"></div></a>
+    <div id="gps-control" title="Pan to current location">📍</div>
     <div id="filter-control">
         <label for="space-type-filter">Public Space Type:</label>
         <select id="space-type-filter">
@@ -216,6 +232,28 @@
             });
 
             map.on('mouseleave', 'pops-layer', closePopup);
+
+            // GPS location functionality
+            const gpsControl = document.getElementById('gps-control');
+            gpsControl.addEventListener('click', () => {
+                if ("geolocation" in navigator) {
+                    navigator.geolocation.getCurrentPosition((position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        map.flyTo({
+                            center: [lon, lat],
+                            zoom: 15
+                        });
+                        new maplibregl.Marker()
+                            .setLngLat([lon, lat])
+                            .addTo(map);
+                    }, () => {
+                        alert("Unable to retrieve your location");
+                    });
+                } else {
+                    alert("Geolocation is not supported by your browser");
+                }
+            });
         });
 
         // Prevent default behavior of the map link
