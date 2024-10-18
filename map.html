@@ -13,9 +13,6 @@
             font-family: Helvetica, Arial, sans-serif;
         }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; }
-        .maplibregl-popup-content {
-            opacity: 0.9;
-        }
         #map-link {
             color: inherit;
             text-decoration: none;
@@ -24,18 +21,28 @@
             color: inherit;
             text-decoration: none;
         }
-        #filter-control {
+        #filter-control, #details-panel {
             position: absolute;
             top: 10px;
-            right: 10px;
             z-index: 1;
             background-color: white;
             padding: 10px;
             border-radius: 3px;
             box-shadow: 0 1px 2px rgba(0,0,0,0.1);
             border: 1px solid #ccc;
+            max-height: calc(100% - 40px);
+            overflow-y: auto;
         }
-        #filter-control select {
+        #filter-control {
+            right: 10px;
+            width: 200px;
+        }
+        #details-panel {
+            left: 10px;
+            width: 300px;
+            display: none;
+        }
+        #filter-control select, #clear-filters {
             margin-bottom: 5px;
             width: 100%;
         }
@@ -44,7 +51,6 @@
             font-weight: bold;
         }
         #clear-filters {
-            width: 100%;
             margin-top: 10px;
             padding: 5px;
             background-color: #f0f0f0;
@@ -57,7 +63,7 @@
         }
         #gps-control {
             position: absolute;
-            top: 10px;
+            bottom: 10px;
             left: 10px;
             z-index: 1;
             background-color: white;
@@ -69,6 +75,10 @@
         }
         #gps-control:hover {
             background-color: #f0f0f0;
+        }
+        #close-details {
+            float: right;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -89,6 +99,10 @@
             <option value="all">All Hours</option>
         </select>
         <button id="clear-filters">Clear Filters</button>
+    </div>
+    <div id="details-panel">
+        <span id="close-details">&times;</span>
+        <div id="details-content"></div>
     </div>
     <script>
         const map = new maplibregl.Map({
@@ -126,7 +140,6 @@
                 }
             });
 
-            let currentPopup = null;
             let highlightedFeatureId = null;
             let spaceTypes = {};
             let amenities = {};
@@ -152,6 +165,9 @@
             const spaceTypeFilter = document.getElementById('space-type-filter');
             const amenityFilter = document.getElementById('amenity-filter');
             const hoursFilter = document.getElementById('hours-filter');
+            const detailsPanel = document.getElementById('details-panel');
+            const detailsContent = document.getElementById('details-content');
+            const closeDetails = document.getElementById('close-details');
 
             function populateFilter(filter, data) {
                 Object.entries(data)
@@ -212,26 +228,25 @@
                 updateFilter();
             });
 
-            function createPopupContent(properties) {
+            function createDetailsContent(properties) {
                 const amenitiesList = properties.amenities_required
                     .split('; ')
                     .map(amenity => `<li>${amenity}</li>`)
                     .join('');
-                return `<b>${properties.building_name}</b><br>
-                        Address: ${properties.building_address_with_zip}<br>
-                        Year Completed: ${properties.year_completed}<br>
-                        Public Space Type: ${properties.public_space_type.split('; ').join(', ')}<br>
-                        Size Required: ${properties.size_required}<br>
-                        Hours of Access Required: ${properties.hour_of_access_required.split('; ').join(', ')}<br>
-                        Amenities Required: 
-                        <ul>${amenitiesList}</ul>`;
+                return `<h3>${properties.building_name}</h3>
+                        <p><strong>Address:</strong> ${properties.building_address_with_zip}</p>
+                        <p><strong>Year Completed:</strong> ${properties.year_completed}</p>
+                        <p><strong>Public Space Type:</strong> ${properties.public_space_type.split('; ').join(', ')}</p>
+                        <p><strong>Size Required:</strong> ${properties.size_required}</p>
+                        <p><strong>Hours of Access Required:</strong> ${properties.hour_of_access_required.split('; ').join(', ')}</p>
+                        <p><strong>Amenities Required:</strong></p>
+                        <ul>${amenitiesList}</ul>
+                        <p><a href="https://apops.mas.org/pops/${properties.pops_number.toLowerCase()}/" target="_blank">View on APOPS</a></p>`;
             }
 
-            function updatePopup(e) {
-                const coordinates = e.features[0].geometry.coordinates.slice();
+            function updateDetails(e) {
                 const properties = e.features[0].properties;
                 const popsNumber = properties.pops_number;
-                const apopsLink = `https://apops.mas.org/pops/${popsNumber.toLowerCase()}/`;
 
                 if (highlightedFeatureId !== popsNumber) {
                     if (highlightedFeatureId !== null) {
@@ -241,38 +256,33 @@
                     highlightedFeatureId = popsNumber;
                 }
 
-                if (!currentPopup) {
-                    currentPopup = new maplibregl.Popup()
-                        .setLngLat(coordinates)
-                        .setHTML(createPopupContent(properties))
-                        .addTo(map);
-                } else {
-                    currentPopup.setLngLat(coordinates)
-                        .setHTML(createPopupContent(properties));
-                }
-
-                document.getElementById('map-link').href = apopsLink;
+                detailsContent.innerHTML = createDetailsContent(properties);
+                detailsPanel.style.display = 'block';
             }
 
-            function closePopup() {
-                if (currentPopup) {
-                    currentPopup.remove();
-                    currentPopup = null;
-                }
+            function closeDetailsPanel() {
+                detailsPanel.style.display = 'none';
                 if (highlightedFeatureId !== null) {
                     updateCircleStyle(highlightedFeatureId, false);
                     highlightedFeatureId = null;
                 }
                 map.getCanvas().style.cursor = '';
-                document.getElementById('map-link').href = '#';
             }
 
-            map.on('mousemove', 'pops-layer', (e) => {
+            map.on('click', 'pops-layer', (e) => {
                 map.getCanvas().style.cursor = 'pointer';
-                updatePopup(e);
+                updateDetails(e);
             });
 
-            map.on('mouseleave', 'pops-layer', closePopup);
+            map.on('mousemove', 'pops-layer', () => {
+                map.getCanvas().style.cursor = 'pointer';
+            });
+
+            map.on('mouseleave', 'pops-layer', () => {
+                map.getCanvas().style.cursor = '';
+            });
+
+            closeDetails.addEventListener('click', closeDetailsPanel);
 
             function updateCircleStyle(popsNumber, highlight) {
                 if (highlight) {
@@ -315,12 +325,6 @@
                     alert("Geolocation is not supported by your browser");
                 }
             });
-        });
-
-        // Prevent default behavior of the map link
-        const mapLink = document.getElementById('map-link');
-        mapLink.addEventListener('mousedown', function(e) {
-            e.preventDefault();
         });
     </script>
 </body>
