@@ -274,8 +274,12 @@
 
             map.on('click', 'pops-layer', (e) => {
                 const properties = e.features[0].properties;
+                if (lastClickedFeatureId !== null) {
+                    updateCircleStyle(lastClickedFeatureId, false);
+                }
                 lastClickedFeatureId = properties.pops_number;
                 updateDetails(properties);
+                updateCircleStyle(properties.pops_number, true);
             });
 
             map.on('mousemove', 'pops-layer', (e) => {
