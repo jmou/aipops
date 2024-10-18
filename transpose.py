@@ -8,7 +8,7 @@ def transpose_csv(input_file, output_dir):
         reader = csv.DictReader(csvfile)
         for row in reader:
             pops_number = row['pops_number']
-            filename = os.path.join(output_dir, f"{pops_number}.env")
+            filename = os.path.join(output_dir, f"{pops_number}")
             
             with open(filename, 'w') as envfile:
                 for key, value in row.items():
