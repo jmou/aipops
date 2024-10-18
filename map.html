@@ -252,6 +252,9 @@
                     if (highlightedFeatureId !== null) {
                         updateCircleStyle(highlightedFeatureId, false);
                     }
+                    if (lastClickedFeatureId !== null && lastClickedFeatureId !== popsNumber) {
+                        updateCircleStyle(lastClickedFeatureId, false);
+                    }
                     updateCircleStyle(popsNumber, true);
                     highlightedFeatureId = popsNumber;
                 }
@@ -301,23 +304,22 @@
             });
 
             function updateCircleStyle(popsNumber, highlight) {
-                if (highlight) {
-                    map.setPaintProperty('pops-layer', 'circle-stroke-color', [
-                        'case',
-                        ['==', ['get', 'pops_number'], popsNumber],
-                        '#0000FF',
-                        '#000'
-                    ]);
-                    map.setPaintProperty('pops-layer', 'circle-stroke-width', [
-                        'case',
-                        ['==', ['get', 'pops_number'], popsNumber],
-                        3,
-                        1
-                    ]);
-                } else {
-                    map.setPaintProperty('pops-layer', 'circle-stroke-color', '#000');
-                    map.setPaintProperty('pops-layer', 'circle-stroke-width', 1);
-                }
+                map.setPaintProperty('pops-layer', 'circle-stroke-color', [
+                    'case',
+                    ['==', ['get', 'pops_number'], popsNumber],
+                    highlight ? '#0000FF' : '#87CEFA',
+                    ['==', ['get', 'pops_number'], lastClickedFeatureId],
+                    '#87CEFA',
+                    '#000'
+                ]);
+                map.setPaintProperty('pops-layer', 'circle-stroke-width', [
+                    'case',
+                    ['==', ['get', 'pops_number'], popsNumber],
+                    highlight ? 3 : 2,
+                    ['==', ['get', 'pops_number'], lastClickedFeatureId],
+                    2,
+                    1
+                ]);
             }
 
             // GPS location functionality
