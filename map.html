@@ -229,7 +229,9 @@
                 updateFilter();
             });
 
-            function createDetailsContent(properties) {
+            async function createDetailsContent(properties) {
+                // In the future, this function will fetch data from a network
+                // For now, we'll just return the same content
                 return `<h3>${properties.building_name}</h3>
                         <p><strong>Address:</strong> ${properties.building_address_with_zip}</p>
                         <p><strong>Year Completed:</strong> ${properties.year_completed}</p>
@@ -240,7 +242,7 @@
                         <p><a href="https://apops.mas.org/pops/${properties.pops_number.toLowerCase()}/" target="_blank">View on APOPS</a></p>`;
             }
 
-            function updateDetails(properties) {
+            async function updateDetails(properties) {
                 const popsNumber = properties.pops_number;
 
                 if (highlightedFeatureId !== popsNumber) {
@@ -254,7 +256,7 @@
                     highlightedFeatureId = popsNumber;
                 }
 
-                detailsContent.innerHTML = createDetailsContent(properties);
+                detailsContent.innerHTML = await createDetailsContent(properties);
                 detailsPanel.style.display = 'block';
             }
 
@@ -267,30 +269,30 @@
                 map.getCanvas().style.cursor = '';
             }
 
-            map.on('click', 'pops-layer', (e) => {
+            map.on('click', 'pops-layer', async (e) => {
                 const properties = e.features[0].properties;
                 if (lastClickedFeatureId !== null) {
                     updateCircleStyle(lastClickedFeatureId, false);
                 }
                 lastClickedFeatureId = properties.pops_number;
-                updateDetails(properties);
+                await updateDetails(properties);
                 updateCircleStyle(properties.pops_number, true);
             });
 
-            map.on('mousemove', 'pops-layer', (e) => {
+            map.on('mousemove', 'pops-layer', async (e) => {
                 map.getCanvas().style.cursor = 'pointer';
                 const properties = e.features[0].properties;
-                updateDetails(properties);
+                await updateDetails(properties);
             });
 
-            map.on('mouseleave', 'pops-layer', () => {
+            map.on('mouseleave', 'pops-layer', async () => {
                 map.getCanvas().style.cursor = '';
                 if (lastClickedFeatureId) {
                     const feature = map.querySourceFeatures('pops', {
                         filter: ['==', ['get', 'pops_number'], lastClickedFeatureId]
                     })[0];
                     if (feature) {
-                        updateDetails(feature.properties);
+                        await updateDetails(feature.properties);
                     }
                 } else {
                     closeDetailsPanel();
