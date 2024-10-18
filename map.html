@@ -141,6 +141,7 @@
             });
 
             let highlightedFeatureId = null;
+            let lastClickedFeatureId = null;
             let spaceTypes = {};
             let amenities = {};
             let hoursOfAccess = {};
@@ -244,8 +245,7 @@
                         <p><a href="https://apops.mas.org/pops/${properties.pops_number.toLowerCase()}/" target="_blank">View on APOPS</a></p>`;
             }
 
-            function updateDetails(e) {
-                const properties = e.features[0].properties;
+            function updateDetails(properties) {
                 const popsNumber = properties.pops_number;
 
                 if (highlightedFeatureId !== popsNumber) {
@@ -270,19 +270,35 @@
             }
 
             map.on('click', 'pops-layer', (e) => {
-                map.getCanvas().style.cursor = 'pointer';
-                updateDetails(e);
+                const properties = e.features[0].properties;
+                lastClickedFeatureId = properties.pops_number;
+                updateDetails(properties);
             });
 
-            map.on('mousemove', 'pops-layer', () => {
+            map.on('mousemove', 'pops-layer', (e) => {
                 map.getCanvas().style.cursor = 'pointer';
+                const properties = e.features[0].properties;
+                updateDetails(properties);
             });
 
             map.on('mouseleave', 'pops-layer', () => {
                 map.getCanvas().style.cursor = '';
+                if (lastClickedFeatureId) {
+                    const feature = map.querySourceFeatures('pops', {
+                        filter: ['==', ['get', 'pops_number'], lastClickedFeatureId]
+                    })[0];
+                    if (feature) {
+                        updateDetails(feature.properties);
+                    }
+                } else {
+                    closeDetailsPanel();
+                }
             });
 
-            closeDetails.addEventListener('click', closeDetailsPanel);
+            closeDetails.addEventListener('click', () => {
+                closeDetailsPanel();
+                lastClickedFeatureId = null;
+            });
 
             function updateCircleStyle(popsNumber, highlight) {
                 if (highlight) {
