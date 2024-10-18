@@ -230,18 +230,13 @@
             });
 
             function createDetailsContent(properties) {
-                const amenitiesList = properties.amenities_required
-                    .split('; ')
-                    .map(amenity => `<li>${amenity}</li>`)
-                    .join('');
                 return `<h3>${properties.building_name}</h3>
                         <p><strong>Address:</strong> ${properties.building_address_with_zip}</p>
                         <p><strong>Year Completed:</strong> ${properties.year_completed}</p>
                         <p><strong>Public Space Type:</strong> ${properties.public_space_type.split('; ').join(', ')}</p>
                         <p><strong>Size Required:</strong> ${properties.size_required}</p>
                         <p><strong>Hours of Access Required:</strong> ${properties.hour_of_access_required.split('; ').join(', ')}</p>
-                        <p><strong>Amenities Required:</strong></p>
-                        <ul>${amenitiesList}</ul>
+                        <p><strong>Amenities Required:</strong> ${properties.amenities_required.split('; ').join(', ')}</p>
                         <p><a href="https://apops.mas.org/pops/${properties.pops_number.toLowerCase()}/" target="_blank">View on APOPS</a></p>`;
             }
 
