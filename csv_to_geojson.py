@@ -1,5 +1,6 @@
 import csv
 import json
+import sys
 
 def csv_to_geojson(csv_file, geojson_file):
     features = []
@@ -30,5 +31,11 @@ def csv_to_geojson(csv_file, geojson_file):
         json.dump(geojson, outfile, indent=2)
 
 if __name__ == "__main__":
-    csv_to_geojson('pops.csv', 'pops.geojson')
-    print("GeoJSON file 'pops.geojson' has been created.")
+    if len(sys.argv) != 3:
+        print("Usage: python csv_to_geojson.py <input_csv_file> <output_geojson_file>")
+        sys.exit(1)
+
+    input_csv = sys.argv[1]
+    output_geojson = sys.argv[2]
+    csv_to_geojson(input_csv, output_geojson)
+    print(f"GeoJSON file '{output_geojson}' has been created.")
