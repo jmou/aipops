@@ -10,7 +10,7 @@ all: $(GEOJSON_FILE)
 
 # Rule to generate GeoJSON from CSV
 $(GEOJSON_FILE): $(CSV_FILE) csv_to_geojson.py
-	$(PYTHON) csv_to_geojson.py
+	$(PYTHON) csv_to_geojson.py $(CSV_FILE) $(GEOJSON_FILE)
 
 # Clean target to remove generated files
 clean:
