@@ -266,10 +266,10 @@
                     }
                     updateFeatureStyle(popsNumber, true);
                     highlightedFeatureId = popsNumber;
-                }
 
-                detailsContent.innerHTML = await createDetailsContent(properties);
-                detailsPanel.style.display = 'block';
+                    detailsContent.innerHTML = await createDetailsContent(properties);
+                    detailsPanel.style.display = 'block';
+                }
             }
 
             function closeDetailsPanel() {
