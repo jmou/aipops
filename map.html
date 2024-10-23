@@ -120,7 +120,19 @@
             });
 
             map.addLayer({
-                'id': 'pops-layer',
+                'id': 'pops-polygon',
+                'type': 'fill',
+                'source': 'pops',
+                'paint': {
+                    'fill-color': '#ff7800',
+                    'fill-opacity': 0.7,
+                    'fill-outline-color': '#000'
+                },
+                'filter': ['==', ['geometry-type'], 'Polygon']
+            });
+
+            map.addLayer({
+                'id': 'pops-point',
                 'type': 'circle',
                 'source': 'pops',
                 'paint': {
@@ -129,7 +141,8 @@
                     'circle-stroke-width': 1,
                     'circle-stroke-color': '#000',
                     'circle-opacity': 0.7
-                }
+                },
+                'filter': ['==', ['geometry-type'], 'Point']
             });
 
             let highlightedFeatureId = null;
@@ -206,7 +219,8 @@
                     filter.push(createFilterCondition('hour_of_access_required', selectedHours));
                 }
 
-                map.setFilter('pops-layer', filter.length > 1 ? filter : null);
+                map.setFilter('pops-polygon', filter.length > 1 ? filter : null);
+                map.setFilter('pops-point', filter.length > 1 ? filter : null);
             }
 
             spaceTypeFilter.addEventListener('change', updateFilter);
@@ -261,23 +275,29 @@
                 map.getCanvas().style.cursor = '';
             }
 
-            map.on('click', 'pops-layer', async (e) => {
+            function handlePOPSInteraction(e) {
                 const properties = e.features[0].properties;
                 if (lastClickedFeatureId !== null) {
-                    updateCircleStyle(lastClickedFeatureId, false);
+                    updateFeatureStyle(lastClickedFeatureId, false);
                 }
                 lastClickedFeatureId = properties.pops_number;
-                await updateDetails(properties);
-                updateCircleStyle(properties.pops_number, true);
-            });
+                updateDetails(properties);
+                updateFeatureStyle(properties.pops_number, true);
+            }
 
-            map.on('mousemove', 'pops-layer', async (e) => {
+            map.on('click', 'pops-polygon', handlePOPSInteraction);
+            map.on('click', 'pops-point', handlePOPSInteraction);
+
+            function handlePOPSMouseMove(e) {
                 map.getCanvas().style.cursor = 'pointer';
                 const properties = e.features[0].properties;
-                await updateDetails(properties);
-            });
+                updateDetails(properties);
+            }
 
-            map.on('mouseleave', 'pops-layer', async () => {
+            map.on('mousemove', 'pops-polygon', handlePOPSMouseMove);
+            map.on('mousemove', 'pops-point', handlePOPSMouseMove);
+
+            function handlePOPSMouseLeave() {
                 map.getCanvas().style.cursor = '';
                 if (lastClickedFeatureId) {
                     const feature = map.querySourceFeatures('pops', {
@@ -296,22 +316,44 @@
                 lastClickedFeatureId = null;
             });
 
-            function updateCircleStyle(popsNumber, highlight) {
-                map.setPaintProperty('pops-layer', 'circle-stroke-color', [
+            function updateFeatureStyle(popsNumber, highlight) {
+                const highlightColor = highlight ? '#0000FF' : '#87CEFA';
+                const defaultColor = '#000';
+                const highlightWidth = highlight ? 3 : 2;
+                const defaultWidth = 1;
+
+                map.setPaintProperty('pops-point', 'circle-stroke-color', [
                     'case',
                     ['==', ['get', 'pops_number'], popsNumber],
-                    highlight ? '#0000FF' : '#87CEFA',
+                    highlightColor,
                     ['==', ['get', 'pops_number'], lastClickedFeatureId],
                     '#87CEFA',
-                    '#000'
+                    defaultColor
                 ]);
-                map.setPaintProperty('pops-layer', 'circle-stroke-width', [
+                map.setPaintProperty('pops-point', 'circle-stroke-width', [
                     'case',
                     ['==', ['get', 'pops_number'], popsNumber],
-                    highlight ? 3 : 2,
+                    highlightWidth,
                     ['==', ['get', 'pops_number'], lastClickedFeatureId],
                     2,
-                    1
+                    defaultWidth
+                ]);
+
+                map.setPaintProperty('pops-polygon', 'fill-outline-color', [
+                    'case',
+                    ['==', ['get', 'pops_number'], popsNumber],
+                    highlightColor,
+                    ['==', ['get', 'pops_number'], lastClickedFeatureId],
+                    '#87CEFA',
+                    defaultColor
+                ]);
+                map.setPaintProperty('pops-polygon', 'fill-opacity', [
+                    'case',
+                    ['==', ['get', 'pops_number'], popsNumber],
+                    highlight ? 0.8 : 0.7,
+                    ['==', ['get', 'pops_number'], lastClickedFeatureId],
+                    0.7,
+                    0.7
                 ]);
             }
 
