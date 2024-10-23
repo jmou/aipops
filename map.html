@@ -236,17 +236,11 @@
             });
 
             async function createDetailsContent(properties) {
-                try {
-                    const response = await fetch(`/pops/${properties.pops_number}/details.html`);
-                    if (response.ok) {
-                        return await response.text();
-                    } else if (response.status === 404) {
-                        throw new Error('404 Not Found');
-                    } else {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                } catch (error) {
-                    console.warn(`Failed to fetch details for ${properties.pops_number}: ${error.message}`);
+                const response = await fetch(`/pops/${properties.pops_number}/details.html`);
+                if (response.ok) {
+                    return await response.text();
+                } else {
+                    console.warn(`Failed to fetch details for ${properties.pops_number}: ${response.status}`);
                     return `<h3>${properties.building_name}</h3>
                             <p><strong>Address:</strong> ${properties.building_address_with_zip}</p>
                             <p><strong>Year Completed:</strong> ${properties.year_completed}</p>
