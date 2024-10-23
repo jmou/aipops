@@ -253,12 +253,12 @@
 
                 if (highlightedFeatureId !== popsNumber) {
                     if (highlightedFeatureId !== null) {
-                        updateCircleStyle(highlightedFeatureId, false);
+                        updateFeatureStyle(highlightedFeatureId, false);
                     }
                     if (lastClickedFeatureId !== null && lastClickedFeatureId !== popsNumber) {
-                        updateCircleStyle(lastClickedFeatureId, false);
+                        updateFeatureStyle(lastClickedFeatureId, false);
                     }
-                    updateCircleStyle(popsNumber, true);
+                    updateFeatureStyle(popsNumber, true);
                     highlightedFeatureId = popsNumber;
                 }
 
@@ -269,42 +269,42 @@
             function closeDetailsPanel() {
                 detailsPanel.style.display = 'none';
                 if (highlightedFeatureId !== null) {
-                    updateCircleStyle(highlightedFeatureId, false);
+                    updateFeatureStyle(highlightedFeatureId, false);
                     highlightedFeatureId = null;
                 }
                 map.getCanvas().style.cursor = '';
             }
 
-            function handlePOPSInteraction(e) {
+            async function handlePOPSInteraction(e) {
                 const properties = e.features[0].properties;
                 if (lastClickedFeatureId !== null) {
                     updateFeatureStyle(lastClickedFeatureId, false);
                 }
                 lastClickedFeatureId = properties.pops_number;
-                updateDetails(properties);
+                await updateDetails(properties);
                 updateFeatureStyle(properties.pops_number, true);
             }
 
             map.on('click', 'pops-polygon', handlePOPSInteraction);
             map.on('click', 'pops-point', handlePOPSInteraction);
 
-            function handlePOPSMouseMove(e) {
+            async function handlePOPSMouseMove(e) {
                 map.getCanvas().style.cursor = 'pointer';
                 const properties = e.features[0].properties;
-                updateDetails(properties);
+                await updateDetails(properties);
             }
 
             map.on('mousemove', 'pops-polygon', handlePOPSMouseMove);
             map.on('mousemove', 'pops-point', handlePOPSMouseMove);
 
-            function handlePOPSMouseLeave() {
+            async function handlePOPSMouseLeave() {
                 map.getCanvas().style.cursor = '';
                 if (lastClickedFeatureId) {
                     const feature = map.querySourceFeatures('pops', {
                         filter: ['==', ['get', 'pops_number'], lastClickedFeatureId]
                     })[0];
                     if (feature) {
-                        updateDetails(feature.properties);
+                        await updateDetails(feature.properties);
                     }
                 } else {
                     closeDetailsPanel();
