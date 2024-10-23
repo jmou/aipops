@@ -239,7 +239,7 @@
                 const response = await fetch(`/pops/${properties.pops_number}/details.html`);
                 if (response.ok) {
                     return await response.text();
-                } else {
+                } else if (response.status === 404) {
                     console.warn(`Failed to fetch details for ${properties.pops_number}: ${response.status}`);
                     return `<h3>${properties.building_name}</h3>
                             <p><strong>Address:</strong> ${properties.building_address_with_zip}</p>
@@ -249,6 +249,8 @@
                             <p><strong>Hours of Access Required:</strong> ${properties.hour_of_access_required.split('; ').join(', ')}</p>
                             <p><strong>Amenities Required:</strong> ${properties.amenities_required.split('; ').join(', ')}</p>
                             <p><a href="https://apops.mas.org/pops/${properties.pops_number.toLowerCase()}/" target="_blank">View on APOPS</a></p>`;
+                } else {
+                    throw new Error(`Unexpected error fetching details for ${properties.pops_number}: ${response.status}`);
                 }
             }
 
