@@ -325,31 +325,28 @@
                 const highlightWidth = highlight ? 3 : 2;
                 const defaultWidth = 1;
 
-                map.setPaintProperty('pops-point', 'circle-stroke-color', [
+                const strokeColor = [
                     'case',
                     ['==', ['get', 'pops_number'], popsNumber],
                     highlightColor,
                     ['==', ['get', 'pops_number'], lastClickedFeatureId],
                     '#87CEFA',
                     defaultColor
-                ]);
-                map.setPaintProperty('pops-point', 'circle-stroke-width', [
+                ];
+
+                const strokeWidth = [
                     'case',
                     ['==', ['get', 'pops_number'], popsNumber],
                     highlightWidth,
                     ['==', ['get', 'pops_number'], lastClickedFeatureId],
                     2,
                     defaultWidth
-                ]);
+                ];
 
-                map.setPaintProperty('pops-polygon', 'fill-outline-color', [
-                    'case',
-                    ['==', ['get', 'pops_number'], popsNumber],
-                    highlightColor,
-                    ['==', ['get', 'pops_number'], lastClickedFeatureId],
-                    '#87CEFA',
-                    defaultColor
-                ]);
+                map.setPaintProperty('pops-point', 'circle-stroke-color', strokeColor);
+                map.setPaintProperty('pops-point', 'circle-stroke-width', strokeWidth);
+
+                map.setPaintProperty('pops-polygon', 'fill-outline-color', strokeColor);
                 map.setPaintProperty('pops-polygon', 'fill-opacity', [
                     'case',
                     ['==', ['get', 'pops_number'], popsNumber],
@@ -358,6 +355,25 @@
                     0.7,
                     0.7
                 ]);
+
+                // Add a new layer for polygon outlines
+                const outlineLayerId = 'pops-polygon-outline';
+                if (!map.getLayer(outlineLayerId)) {
+                    map.addLayer({
+                        'id': outlineLayerId,
+                        'type': 'line',
+                        'source': 'pops',
+                        'layout': {},
+                        'paint': {
+                            'line-color': strokeColor,
+                            'line-width': strokeWidth
+                        },
+                        'filter': ['==', ['geometry-type'], 'Polygon']
+                    });
+                } else {
+                    map.setPaintProperty(outlineLayerId, 'line-color', strokeColor);
+                    map.setPaintProperty(outlineLayerId, 'line-width', strokeWidth);
+                }
             }
 
             // GPS location functionality
