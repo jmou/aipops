@@ -304,12 +304,15 @@
                         filter: ['==', ['get', 'pops_number'], lastClickedFeatureId]
                     })[0];
                     if (feature) {
-                        await updateDetails(feature.properties);
+                        updateDetails(feature.properties);
                     }
                 } else {
                     closeDetailsPanel();
                 }
-            });
+            }
+
+            map.on('mouseleave', 'pops-polygon', handlePOPSMouseLeave);
+            map.on('mouseleave', 'pops-point', handlePOPSMouseLeave);
 
             closeDetails.addEventListener('click', () => {
                 closeDetailsPanel();
