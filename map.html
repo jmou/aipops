@@ -194,7 +194,7 @@
                 const selectedType = spaceTypeFilter.value;
                 const selectedAmenity = amenityFilter.value;
                 const selectedHours = hoursFilter.value;
-                let filter = ['all'];
+                let baseFilter = ['all'];
 
                 function createFilterCondition(property, value) {
                     if (value === '') {
@@ -208,19 +208,29 @@
                 }
 
                 if (selectedType !== 'all') {
-                    filter.push(createFilterCondition('public_space_type', selectedType));
+                    baseFilter.push(createFilterCondition('public_space_type', selectedType));
                 }
 
                 if (selectedAmenity !== 'all') {
-                    filter.push(createFilterCondition('amenities_required', selectedAmenity));
+                    baseFilter.push(createFilterCondition('amenities_required', selectedAmenity));
                 }
 
                 if (selectedHours !== 'all') {
-                    filter.push(createFilterCondition('hour_of_access_required', selectedHours));
+                    baseFilter.push(createFilterCondition('hour_of_access_required', selectedHours));
                 }
 
-                map.setFilter('pops-polygon', filter.length > 1 ? filter : null);
-                map.setFilter('pops-point', filter.length > 1 ? filter : null);
+                // Create specific filters for each layer that include the geometry type
+                const polygonFilter = ['all', ['==', ['geometry-type'], 'Polygon']];
+                const pointFilter = ['all', ['==', ['geometry-type'], 'Point']];
+
+                // Add the base filters if there are any
+                if (baseFilter.length > 1) {
+                    polygonFilter.push(...baseFilter.slice(1));
+                    pointFilter.push(...baseFilter.slice(1));
+                }
+
+                map.setFilter('pops-polygon', polygonFilter);
+                map.setFilter('pops-point', pointFilter);
             }
 
             spaceTypeFilter.addEventListener('change', updateFilter);
