@@ -246,7 +246,7 @@
             });
 
             async function createDetailsContent(properties) {
-                const response = await fetch(`/pops/${properties.pops_number}/details.html`);
+                const response = await fetch(`pops/${properties.pops_number}/details.html`);
                 if (response.ok) {
                     return await response.text();
                 } else if (response.status === 404) {
