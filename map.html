@@ -424,10 +424,6 @@
             function updateMarkerPosition(position) {
                 const lat = position.coords.latitude;
                 const lon = position.coords.longitude;
-                map.flyTo({
-                    center: [lon, lat],
-                    zoom: 15
-                });
                 if (!currentLocationMarker) {
                     const el = document.createElement('div');
                     el.className = 'location-marker';
@@ -437,6 +433,10 @@
                     })
                         .setLngLat([lon, lat])
                         .addTo(map);
+                    map.flyTo({
+                        center: [lon, lat],
+                        zoom: 15
+                    });
                 } else {
                     currentLocationMarker.setLngLat([lon, lat]);
                 }
