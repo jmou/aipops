@@ -393,6 +393,7 @@
             }
 
             // GPS location functionality
+            let currentLocationMarker = null;
             const gpsControl = document.getElementById('gps-control');
             gpsControl.addEventListener('click', () => {
                 if ("geolocation" in navigator) {
@@ -403,9 +404,13 @@
                             center: [lon, lat],
                             zoom: 15
                         });
-                        new maplibregl.Marker()
-                            .setLngLat([lon, lat])
-                            .addTo(map);
+                        if (!currentLocationMarker) {
+                            currentLocationMarker = new maplibregl.Marker()
+                                .setLngLat([lon, lat])
+                                .addTo(map);
+                        } else {
+                            currentLocationMarker.setLngLat([lon, lat]);
+                        }
                     }, () => {
                         alert("Unable to retrieve your location");
                     });
