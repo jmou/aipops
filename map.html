@@ -72,6 +72,31 @@
             float: right;
             cursor: pointer;
         }
+        .location-marker {
+            width: 16px;
+            height: 16px;
+            background-color: #4285f4;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 2px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        .location-marker::after {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            right: -4px;
+            bottom: -4px;
+            border-radius: 50%;
+            background-color: rgba(66, 133, 244, 0.2);
+            animation: pulse 2s ease-out infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            70% { transform: scale(3); opacity: 0; }
+            100% { transform: scale(3); opacity: 0; }
+        }
     </style>
 </head>
 <body>
@@ -394,28 +419,75 @@
 
             // GPS location functionality
             let currentLocationMarker = null;
+            let watchId = null;
+
+            function updateMarkerPosition(position) {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                map.flyTo({
+                    center: [lon, lat],
+                    zoom: 15
+                });
+                if (!currentLocationMarker) {
+                    const el = document.createElement('div');
+                    el.className = 'location-marker';
+                    currentLocationMarker = new maplibregl.Marker({
+                        element: el,
+                        anchor: 'center'
+                    })
+                        .setLngLat([lon, lat])
+                        .addTo(map);
+                } else {
+                    currentLocationMarker.setLngLat([lon, lat]);
+                }
+            }
+
+            function startLocationTracking() {
+                if (!("geolocation" in navigator)) {
+                    alert("Geolocation is not supported by your browser");
+                    return;
+                }
+
+                if (watchId !== null) {
+                    return; // Already tracking
+                }
+
+                watchId = navigator.geolocation.watchPosition(
+                    updateMarkerPosition,
+                    (error) => {
+                        alert("Unable to retrieve your location");
+                        watchId = null;
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 5000,
+                        maximumAge: 0
+                    }
+                );
+            }
+
+            function stopLocationTracking() {
+                if (watchId !== null) {
+                    navigator.geolocation.clearWatch(watchId);
+                    watchId = null;
+                }
+            }
+
+            // Check if we already have geolocation permission on page load
+            navigator.permissions.query({ name: 'geolocation' }).then(permissionStatus => {
+                if (permissionStatus.state === 'granted') {
+                    startLocationTracking();
+                }
+            });
+
             const gpsControl = document.getElementById('gps-control');
             gpsControl.addEventListener('click', () => {
-                if ("geolocation" in navigator) {
-                    navigator.geolocation.getCurrentPosition((position) => {
-                        const lat = position.coords.latitude;
-                        const lon = position.coords.longitude;
-                        map.flyTo({
-                            center: [lon, lat],
-                            zoom: 15
-                        });
-                        if (!currentLocationMarker) {
-                            currentLocationMarker = new maplibregl.Marker()
-                                .setLngLat([lon, lat])
-                                .addTo(map);
-                        } else {
-                            currentLocationMarker.setLngLat([lon, lat]);
-                        }
-                    }, () => {
-                        alert("Unable to retrieve your location");
-                    });
+                if (watchId === null) {
+                    startLocationTracking();
+                    gpsControl.style.backgroundColor = '#e0e0e0';
                 } else {
-                    alert("Geolocation is not supported by your browser");
+                    stopLocationTracking();
+                    gpsControl.style.backgroundColor = '';
                 }
             });
         });
